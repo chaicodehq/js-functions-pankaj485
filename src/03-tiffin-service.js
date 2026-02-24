@@ -41,12 +41,79 @@
  */
 export function createTiffinPlan({ name, mealType = "veg", days = 30 } = {}) {
   // Your code here
+  if (!name || name.trim() === "") {
+    return null;
+  }
+
+  const mealPrices = {
+    veg: 80,
+    nonveg: 120,
+    jain: 90,
+  };
+
+  if (!mealPrices[mealType] || !name || name.trim() === "") {
+    return null;
+  }
+
+  const dailyRate = mealPrices[mealType];
+  const totalCost = dailyRate * days;
+
+  return {
+    name,
+    mealType,
+    days,
+    dailyRate,
+    totalCost,
+  };
 }
 
 export function combinePlans(...plans) {
   // Your code here
+  if (plans.length === 0) {
+    return null;
+  }
+
+  const mealBreakdown = {
+    veg: 0,
+    nonveg: 0,
+    jain: 0,
+  };
+
+  const validPlans = plans.filter(
+    (_) => _.mealType && mealBreakdown.hasOwnProperty(_.mealType),
+  );
+
+  const totalRevenue = validPlans.reduce((prev, curr) => {
+    mealBreakdown[curr.mealType]++;
+    return prev + curr.totalCost;
+  }, 0);
+
+  return {
+    totalCustomers: validPlans.length,
+    totalRevenue,
+    mealBreakdown,
+  };
 }
 
 export function applyAddons(plan, ...addons) {
   // Your code here
+  if (!plan) {
+    return null;
+  }
+
+  const addonNames = [];
+  const totalPrice = addons.reduce((prev, curr) => {
+    addonNames.push(curr.name);
+    return prev + curr.price;
+  }, 0);
+
+  const newDailyRate = plan.dailyRate + totalPrice;
+  const newTotalCost = newDailyRate * plan.days;
+
+  return {
+    ...plan,
+    dailyRate: newDailyRate,
+    totalCost: newTotalCost,
+    addonNames,
+  };
 }
