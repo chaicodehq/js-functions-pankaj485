@@ -50,4 +50,103 @@
  */
 export function createDabbawala(name, area) {
   // Your code here
+  let deliveries = [];
+
+  const addDelivery = (from, to) => {
+    if (
+      typeof from !== "string" ||
+      typeof to !== "string" ||
+      !from.trim() ||
+      !to.trim()
+    ) {
+      return -1;
+    }
+
+    const deliveryId = deliveries.length + 1;
+    const delivery = {
+      id: deliveryId,
+      name,
+      area,
+      from,
+      to,
+      status: "pending",
+    };
+
+    deliveries.push(delivery);
+
+    return deliveryId;
+  };
+
+  const completeDelivery = (id) => {
+    const index = deliveries.findIndex((_) => _.id === id);
+    if (index < 0) {
+      return false;
+    }
+
+    if (deliveries[index].status === "completed") {
+      return false;
+    }
+
+    deliveries[index].status = "completed";
+    return true;
+  };
+
+  const getStats = () => {
+    const validDeliveries = deliveries.filter(
+      (_) =>
+        _.name.trim().toLowerCase() === name.trim().toLowerCase() &&
+        _.area.trim().toLowerCase() === area.trim().toLowerCase(),
+    );
+
+    const total = validDeliveries.length;
+    const pending = validDeliveries.filter(
+      (_) => _.status === "pending",
+    ).length;
+    const completed = validDeliveries.filter(
+      (_) => _.status === "completed",
+    ).length;
+
+    const successRate =
+      total === 0 ? "0.00%" : `${((completed / total) * 100).toFixed(2)}%`;
+
+    return {
+      name,
+      area,
+      total,
+      pending,
+      completed,
+      successRate,
+    };
+  };
+
+  const getActiveDeliveries = () => {
+    const validDeliveries = deliveries.filter(
+      (_) =>
+        _.name?.trim().toLowerCase() === name.trim()?.toLowerCase() &&
+        _.area?.trim().toLowerCase() === area.trim()?.toLowerCase() &&
+        _.status === "pending",
+    );
+
+    return [...validDeliveries];
+  };
+
+  const reset = () => {
+    deliveries = [];
+    return true;
+  };
+
+  return {
+    addDelivery,
+    completeDelivery,
+    getActiveDeliveries,
+    getStats,
+    reset,
+  };
 }
+
+const ram = createDabbawala("Ram", "Dadar");
+ram.addDelivery("Andheri", "Churchgate");
+ram.completeDelivery(1);
+ram.completeDelivery(1);
+
+console.log(ram.getStats());
