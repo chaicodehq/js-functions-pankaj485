@@ -47,16 +47,60 @@
  */
 export function processGuests(guests, filterFn) {
   // Your code here
+
+  if (!Array.isArray(guests) || typeof filterFn !== "function") {
+    return [];
+  }
+
+  return guests.filter((_) => filterFn(_) === true);
 }
 
 export function notifyGuests(guests, notifyCallback) {
   // Your code here
+  if (!Array.isArray(guests) || typeof notifyCallback !== "function") {
+    return [];
+  }
+
+  return guests.map((_) => notifyCallback(_));
 }
 
 export function handleRSVP(guest, onAccept, onDecline) {
   // Your code here
+  const validRvspValues = ["yes", "no"];
+  if (
+    !guest ||
+    typeof onAccept !== "function" ||
+    typeof onDecline !== "function"
+  ) {
+    return null;
+  }
+
+  const { rsvp } = guest;
+
+  if (!validRvspValues.includes(rsvp)) {
+    return null;
+  }
+
+  const callbacksByRvsp = {
+    yes: onAccept(guest),
+    no: onDecline(guest),
+  };
+
+  return callbacksByRvsp[rsvp];
 }
 
 export function transformGuestList(guests, ...transformFns) {
   // Your code here
+
+  if (!Array.isArray(guests) || guests.length === 0) {
+    return [];
+  }
+
+  let result = guests;
+
+  transformFns.forEach((fn) => {
+    result = fn(result);
+  });
+
+  return result;
 }
