@@ -46,16 +46,84 @@
  */
 export function createFilter(field, operator, value) {
   // Your code here
+  const validOperators = [">", "<", "<=", ">=", "==="];
+  const invalidfn = () => false;
+
+  if (!validOperators.includes(operator)) {
+    return invalidfn;
+  }
+
+  const filterFn = (_) => {
+    if (operator === ">") {
+      return _[field] > value;
+    }
+    if (operator === "<") {
+      return _[field] < value;
+    }
+    if (operator === "<=") {
+      return _[field] <= value;
+    }
+    if (operator === ">=") {
+      return _[field] >= value;
+    }
+    if (operator === "===") {
+      return _[field] === value;
+    }
+
+    return false;
+  };
+
+  return filterFn;
 }
 
 export function createSorter(field, order = "asc") {
   // Your code here
+
+  const sortfn = (a, b) => {
+    if (typeof a[field] === "number" && typeof a[field] === "number") {
+      return order === "asc" ? a[field] - b[field] : b[field] - a[field];
+    }
+
+    if (typeof a[field] === "string" && typeof a[field] === "string") {
+      return order === "asc"
+        ? a[field].localeCompare(b[field])
+        : b[field].localeCompare(a[field]);
+    }
+
+    return 0;
+  };
+
+  return sortfn;
 }
 
 export function createMapper(fields) {
   // Your code here
+
+  const mapperfn = (_) => {
+    const currentData = {};
+
+    fields.forEach((f) => {
+      currentData[f] = _[f];
+    });
+
+    return currentData;
+  };
+
+  return mapperfn;
 }
 
 export function applyOperations(data, ...operations) {
   // Your code here
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  let result = [...data];
+
+  for (const operation of operations) {
+    console.log(operation.name, operation(result));
+    result = operation(result);
+  }
+
+  return result;
 }
