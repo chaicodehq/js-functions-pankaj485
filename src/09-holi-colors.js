@@ -55,20 +55,110 @@
  */
 export function mixColors(color1, color2) {
   // Your code here
+
+  if (
+    !color1 ||
+    !color2 ||
+    typeof color1 !== "object" ||
+    typeof color2 !== "object"
+  ) {
+    return null;
+  }
+
+  return {
+    name: `${color1.name}-${color2.name}`,
+    r: Math.round((color1.r + color2.r) / 2),
+    g: Math.round((color1.g + color2.g) / 2),
+    b: Math.round((color1.b + color2.b) / 2),
+  };
 }
 
 export function adjustBrightness(color, factor) {
   // Your code here
+
+  if (!color || typeof color !== "object" || typeof factor !== "number") {
+    return null;
+  }
+
+  const getNewValue = (val, f = factor) => {
+    const newVal = val * f;
+
+    if (newVal < 0) {
+      return 0;
+    }
+    if (newVal > 255) {
+      return 255;
+    }
+
+    return newVal;
+  };
+
+  const newColor = {
+    ...color,
+    r: getNewValue(color.r),
+    g: getNewValue(color.g),
+    b: getNewValue(color.b),
+  };
+
+  return newColor;
 }
 
 export function addToPalette(palette, color) {
   // Your code here
+  if (!palette || !Array.isArray(palette)) {
+    return [color];
+  }
+
+  if (!color || typeof color !== "object") {
+    return [...palette];
+  }
+
+  return [...palette, color];
 }
 
 export function removeFromPalette(palette, colorName) {
   // Your code here
+  if (!palette || !Array.isArray(palette)) {
+    return [];
+  }
+
+  return [...palette].filter((_) => _.name !== colorName);
 }
 
 export function mergePalettes(palette1, palette2) {
   // Your code here
+  if (!Array.isArray(palette1) && !Array.isArray(palette2)) {
+    return [];
+  }
+
+  if (!Array.isArray(palette1)) {
+    return [...palette2];
+  }
+
+  if (!Array.isArray(palette2)) {
+    return [...palette1];
+  }
+
+  const paletteCount = {};
+
+  return [...palette1, ...palette2].filter((_) => {
+    if (paletteCount[_.name]) {
+      return false;
+    }
+
+    paletteCount[_.name] = true;
+
+    return true;
+  });
 }
+
+const red = () => ({ name: "red", r: 255, g: 0, b: 0 });
+const blue = () => ({ name: "blue", r: 0, g: 0, b: 255 });
+const green = () => ({ name: "green", r: 0, g: 255, b: 0 });
+const gray = () => ({ name: "gray", r: 100, g: 100, b: 100 });
+
+const p1 = [red(), green()];
+const p2 = [blue(), red()]; // red is duplicate
+const result = mergePalettes(p1, p2);
+
+console.log(result);
