@@ -67,15 +67,17 @@ export function createElection(candidates) {
   const votes = {};
   const registeredVoters = new Set();
 
-  console.log({ candidates });
-
   const registerVoter = (voter) => {
     if (!voter || typeof voter !== "object") {
       return false;
     }
 
+    const isVoterRegistered = [...registeredVoters].some(
+      (_) => _.id === voter.id,
+    );
+
     if (
-      registeredVoters.has(voter.id) ||
+      isVoterRegistered ||
       !voter.id ||
       !voter.name ||
       !voter.age ||
@@ -121,20 +123,26 @@ export function createElection(candidates) {
       votesByCandidate[candidateId] = (votesByCandidate[candidateId] || 0) + 1;
     });
 
-    const results = candidates.map((candidate) => {
-      return {
-        id: candidate.id,
-        name: candidate.name,
-        party: candidate.party,
-        votes: votesByCandidate[candidate.id] ?? 0,
-      };
-    });
+    const results = candidates
+      .map((candidate) => {
+        return {
+          id: candidate.id,
+          name: candidate.name,
+          party: candidate.party,
+          votes: votesByCandidate[candidate.id] ?? 0,
+        };
+      })
+      .sort((a, b) => b.votes - a.votes);
 
     return sortFn ? results.sort(sortFn) : results;
   };
 
   const getWinner = () => {
     const votesByCandidate = {};
+
+    if (Object.keys(votes) < 1) {
+      return null;
+    }
 
     Object.values(votes).forEach((candidateId) => {
       votesByCandidate[candidateId] = (votesByCandidate[candidateId] || 0) + 1;
@@ -187,40 +195,36 @@ export function createVoteValidator(rules) {
 
 export function countVotesInRegions(regionTree) {
   // Your code here
+  if (
+    !regionTree ||
+    typeof regionTree !== "object" ||
+    !regionTree.votes ||
+    typeof regionTree.votes !== "number"
+  ) {
+    return 0;
+  }
+
+  let totalVotes = regionTree.votes;
+
+  for (const item of regionTree.subRegions) {
+    totalVotes += countVotesInRegions(item);
+  }
+
+  return totalVotes;
 }
 
 export function tallyPure(currentTally, candidateId) {
-  // Your code here
+  if (!currentTally || !Object.keys(currentTally)) {
+    return null;
+  }
+
+  const response = { ...currentTally };
+
+  if (response[candidateId]) {
+    response[candidateId]++;
+  } else {
+    response[candidateId] = 1;
+  }
+
+  return response;
 }
-
-const election = createElection([
-  { id: "C1", name: "Sarpanch Ram", party: "Janata" },
-  { id: "C2", name: "Pradhan Sita", party: "Lok" },
-]);
-
-console.log(
-  "registering voter: ",
-  election.registerVoter(
-    { id: "V1", name: "Mohan", age: 25 },
-    "C1",
-    (r) => "voted!",
-    (e) => "error: " + e,
-  ),
-);
-
-console.log(
-  "casting vote:",
-  election.castVote(
-    "V1",
-    "C1",
-    (r) => "voted!",
-    (e) => "error: " + e,
-  ),
-);
-
-console.log(
-  "get results: ",
-  election.getResults((a, b) => b.votes - a.votes),
-);
-
-console.log("get winner: ", election.getWinner());
